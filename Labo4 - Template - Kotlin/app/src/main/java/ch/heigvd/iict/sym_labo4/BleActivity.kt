@@ -16,6 +16,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import java.time.LocalDateTime
+import java.util.*
 
 /**
  * Project: Labo4
@@ -51,7 +53,8 @@ class BleActivity : BaseTemplateActivity() {
     private lateinit var buttonDateBLE: Button
 
     private lateinit var timeFieldBLE: EditText
-    private lateinit var timeButtonBLE: Button
+
+    private lateinit var buttonDateUpdateBLE: Button
 
     //menu elements
     private var scanMenuBtn: MenuItem? = null
@@ -93,22 +96,75 @@ class BleActivity : BaseTemplateActivity() {
         buttonDateBLE = findViewById(R.id.buttonDate)
 
         timeFieldBLE = findViewById(R.id.timeField)
-        timeButtonBLE = findViewById(R.id.buttonTime)
 
+        buttonDateUpdateBLE = findViewById(R.id.buttonDateUpdate)
+
+        // For asking to read the temperature of the device
         buttonTemperatureBLE.setOnClickListener(){
             bleViewModel.readTemperature()
         }
 
+        // For sending an integer to the device
         buttonIntegerBLE.setOnClickListener(){
 
         }
 
-        buttonDateBLE.setOnClickListener(){
-            if ()
+        // For automatically updating the date
+        buttonDateUpdateBLE.setOnClickListener(){
+            val calendar = Calendar.getInstance()
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val min = calendar.get(Calendar.MINUTE)
+            val sec = calendar.get(Calendar.SECOND)
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
         }
 
-        buttonTimeBLE.setOnClickListener(){
+        // For manually updating the date
+        buttonDateBLE.setOnClickListener(){
+            // Variables for the formats verifications
+            var dateOK = false
+            var timeOK = false
 
+            var day: Int = 0
+            var month: Int = 0
+            var year: Int = 0
+
+            var hour: Int = 0
+            var min: Int = 0
+            var sec: Int = 0
+
+            // Verification for the Date format
+            val regexDate = Regex("[0-3][0-9](\\.|\\/|-)[0-1][0-9](\\.|\\/|-)[0-9]{4}")
+            if (regexDate.matchEntire(dateFieldBLE.text) != null){
+                day = dateFieldBLE.text.substring(0,2).toInt()
+                month = dateFieldBLE.text.substring(3,5).toInt()
+                year = dateFieldBLE.text.substring(6,10).toInt()
+
+                if (day<=31 && month <=12){
+                    dateOK = true
+                }
+            }
+
+            // Verification for the Time format
+            val regexTime = Regex("[0-2][0-9](:)[0-5][0-9](:)[0-5][0-9]")
+            if (regexTime.matchEntire(timeFieldBLE.text) != null){
+                hour = dateFieldBLE.text.substring(0,2).toInt()
+                min = dateFieldBLE.text.substring(3,5).toInt()
+                sec = dateFieldBLE.text.substring(6,8).toInt()
+
+                if (hour<=23 && min<=59 && sec<=59){
+                    timeOK = true
+                }
+            }
+
+            // If everything is OK we can call the function for updating the date and time
+            if (dateOK && timeOK){
+
+            }
+            else {
+                Toast.makeText(this, "Mauvais format !", Toast.LENGTH_LONG).show()
+            }
         }
 
         //manage scanned item

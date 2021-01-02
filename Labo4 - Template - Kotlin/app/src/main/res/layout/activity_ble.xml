@@ -94,22 +94,13 @@
                 android:ems="10"
                 android:hint="jour/mois/année"
                 android:inputType="date"
-                android:textAlignment="center" />
-
-            <Button
-                android:id="@+id/buttonDate"
-                android:layout_width="match_parent"
-                android:layout_height="33dp"
-                android:autoText="false"
-                android:elegantTextHeight="false"
-                android:text="Changer"
-                android:textSize="10sp" />
+                android:textAlignment="center"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/infoChangeHour"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="100px"
                 android:text="Changer l'heure"
                 android:textAlignment="center" />
 
@@ -118,17 +109,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="heure/minutes/secondes"
+                android:hint="heures:minutes:secondes"
                 android:inputType="time"
-                android:textAlignment="center" />
+                android:textAlignment="center"
+                android:textSize="14sp" />
 
             <Button
-                android:id="@+id/buttonTime"
+                android:id="@+id/buttonDate"
                 android:layout_width="match_parent"
                 android:layout_height="33dp"
                 android:autoText="false"
                 android:elegantTextHeight="false"
-                android:text="Changer"
+                android:text="Changer date et heure"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/buttonDateUpdate"
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:autoText="false"
+                android:elegantTextHeight="false"
+                android:text="Mise à jour automatique"
                 android:textSize="10sp" />
 
         </LinearLayout>
