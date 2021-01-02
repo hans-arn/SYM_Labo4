@@ -32,8 +32,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="100px"
+                android:clickable="false"
+                android:linksClickable="false"
                 android:text="TEMPERATURE"
                 android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/buttonTemperature"
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:autoText="false"
+                android:elegantTextHeight="false"
+                android:text="Mettre à jour la température"
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/buttonClick"

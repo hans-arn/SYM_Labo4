@@ -36,10 +36,13 @@ class BleActivity : BaseTemplateActivity() {
     private lateinit var scanResults: ListView
     private lateinit var emptyScanResults: TextView
 
-    // Ajout informations
+    // AJOUT DES TEXTS D INFORMATIONS RECU VIA BLE
     private lateinit var dateBLE: TextView
     private lateinit var temperatureBLE: TextView
     private lateinit var buttonClickBLE: TextView
+
+    // AJOUT DES BOUTONS ET INTERFACES POUR L'UTILISATEUR
+    private lateinit var buttonTemperatureBLE: Button
 
     //menu elements
     private var scanMenuBtn: MenuItem? = null
@@ -70,6 +73,13 @@ class BleActivity : BaseTemplateActivity() {
         dateBLE = findViewById(R.id.date)
         temperatureBLE = findViewById(R.id.temp)
         buttonClickBLE = findViewById(R.id.buttonClick)
+
+        // AJOUT DES BOUTONS ET INTERFACES POUR L'UTILISATEUR
+        buttonTemperatureBLE = findViewById(R.id.buttonTemperature)
+
+        buttonTemperatureBLE.setOnClickListener(){
+            bleViewModel.readTemperature()
+        }
 
         //manage scanned item
         scanResultsAdapter = ResultsAdapter(this)

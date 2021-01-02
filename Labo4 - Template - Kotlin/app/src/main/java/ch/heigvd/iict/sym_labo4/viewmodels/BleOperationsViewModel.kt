@@ -219,8 +219,6 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                     override fun onCharacteristicNotified(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
                         super.onCharacteristicNotified(gatt, characteristic)
 
-                        readTemperature()
-
                         if (characteristic.uuid == currentTimeChar?.uuid) {
                             var year = characteristic.getIntValue(Data.FORMAT_UINT16, 0)
                             var month = characteristic.getIntValue(Data.FORMAT_UINT8, 2)
