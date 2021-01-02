@@ -36,7 +36,10 @@ class BleActivity : BaseTemplateActivity() {
     private lateinit var scanResults: ListView
     private lateinit var emptyScanResults: TextView
 
+    // Ajout informations
+    private lateinit var dateBLE: TextView
     private lateinit var temperatureBLE: TextView
+    private lateinit var buttonClickBLE: TextView
 
     //menu elements
     private var scanMenuBtn: MenuItem? = null
@@ -63,7 +66,10 @@ class BleActivity : BaseTemplateActivity() {
         scanResults = findViewById(R.id.ble_scanresults)
         emptyScanResults = findViewById(R.id.ble_scanresults_empty)
 
+        // AJOUT DES TEXTS D INFORMATIONS RECU VIA BLE
+        dateBLE = findViewById(R.id.date)
         temperatureBLE = findViewById(R.id.temp)
+        buttonClickBLE = findViewById(R.id.buttonClick)
 
         //manage scanned item
         scanResultsAdapter = ResultsAdapter(this)
@@ -88,6 +94,7 @@ class BleActivity : BaseTemplateActivity() {
         //ble events
         bleViewModel.isConnected.observe(this, { updateGui() })
         bleViewModel.temperature.observe(this, { updateGui() })
+        bleViewModel.date.observe(this, {updateGui()})
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -130,8 +137,8 @@ class BleActivity : BaseTemplateActivity() {
             scanPanel.visibility = View.GONE
             operationPanel.visibility = View.VISIBLE
 
-            
             temperatureBLE.text = bleViewModel.temperature.value + " Degrès Celsius"
+            dateBLE.text = bleViewModel.date.value
 
             if (scanMenuBtn != null && disconnectMenuBtn != null) {
                 scanMenuBtn!!.isVisible = false

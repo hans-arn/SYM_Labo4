@@ -27,7 +27,8 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
     //live data - observer
     val isConnected = MutableLiveData(false)
 
-    val temperature = MutableLiveData("efbkerbferbfureibfuiezblfliuezbfuiezbfzeuibfezuifb")
+    val date = MutableLiveData("Jour / Mois / Année | Heure : Minute : Seconde")
+    val temperature = MutableLiveData("TEMPERATURE")
 
     //UUIDs for services and characteristics
     private val timeServiceUUID = "00001805-0000-1000-8000-00805f9b34fb"
@@ -182,7 +183,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                             Dans notre cas il s'agit de s'enregistrer pour recevoir les notifications proposées par certaines
                             caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                          */
-                        // TODO Réception des notifications
+                        // Réception des notifications
 
                         // Local
                         mConnection?.setCharacteristicNotification(currentTimeChar, true)
@@ -203,18 +204,16 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                         }
                         mConnection?.writeDescriptor(descBC)
 
-                        // TODO CALLBACKS
-
+                        // CALLBACKS
+                        // Les callbacks passent par la fonction onCharacteristicNotified
 
                     }
 
                     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
                         super.onCharacteristicRead(gatt, characteristic)
                         if (characteristic.uuid.toString() == temperatureCharUUID) {
-                            Log.d("READ","In it")
                             temperature.postValue(characteristic.getIntValue(Data.FORMAT_UINT16,0).div(10).toString())
                         }
-                        temperature.value?.let { Log.d("READ", it) }
                     }
 
                     override fun onCharacteristicNotified(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
@@ -222,23 +221,18 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
                         readTemperature()
 
-                        if (characteristic == currentTimeChar) {
-                            var year = ByteBuffer.wrap(characteristic.value.copyOfRange(0, 2)).short
-                            var month = characteristic.value[2].toUInt()
-                            var day = characteristic.value[3].toUInt()
+                        if (characteristic.uuid == currentTimeChar?.uuid) {
+                            var year = characteristic.getIntValue(Data.FORMAT_UINT16, 0)
+                            var month = characteristic.getIntValue(Data.FORMAT_UINT8, 2)
+                            var day = characteristic.getIntValue(Data.FORMAT_UINT8, 3)
 
-                            var hours = characteristic.value[4].toUInt()
-                            var mins = characteristic.value[5].toUInt()
-                            var secs = characteristic.value[6].toUInt()
-                            Log.d("ON NOTIFICATION current", year.toString() + "/" + month.toString() + "/" + day.toString() + " " + hours + ":" + mins + ":" + secs)
+                            var hour = characteristic.getIntValue(Data.FORMAT_UINT8, 4);
+                            var min = characteristic.getIntValue(Data.FORMAT_UINT8, 5);
+                            var sec = characteristic.getIntValue(Data.FORMAT_UINT8, 6);
+
+                            date.postValue("$day/$month/$year | $hour:$min:$sec")
                         }
-                        if (characteristic == integerChar) {
-                            Log.d("ON NOTIFICATION integer", String(characteristic.value))
-                        }
-                        if (characteristic == temperatureChar) {
-                            Log.d("ON NOTIFICATION temp", String(characteristic.value))
-                        }
-                        if (characteristic == buttonClickChar) {
+                        if (characteristic.uuid == buttonClickChar?.uuid) {
                             Log.d("ON NOTIFICATION button", String(characteristic.value))
                         }
                     }
@@ -259,7 +253,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
 
         fun readTemperature(): Boolean {
-            /*  TODO
+            /*
                 on peut effectuer ici la lecture de la caractéristique température
                 la valeur récupérée sera envoyée à l'activité en utilisant le mécanisme
                 des MutableLiveData
