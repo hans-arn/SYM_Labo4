@@ -1,17 +1,17 @@
 package ch.heigvd.iict.sym_labo4.viewmodels
 
 import android.app.Application
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
+import android.bluetooth.*
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import no.nordicsemi.android.ble.BleManager
+import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.observer.ConnectionObserver
+import java.nio.ByteBuffer
+import java.util.*
 
 /**
  * Project: Labo4
@@ -26,6 +26,17 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
     //live data - observer
     val isConnected = MutableLiveData(false)
+
+    val temperature = MutableLiveData("efbkerbferbfureibfuiezblfliuezbfuiezbfzeuibfezuifb")
+
+    //UUIDs for services and characteristics
+    private val timeServiceUUID = "00001805-0000-1000-8000-00805f9b34fb"
+    private val symServiceUUID = "3c0a1000-281d-4b48-b2a7-f15579a1c38f"
+
+    private val currentTimeCharUUID = "00002A2B-0000-1000-8000-00805f9b34fb"
+    private val integerCharUUID = "3c0a1001-281d-4b48-b2a7-f15579a1c38f"
+    private val temperatureCharUUID = "3c0a1002-281d-4b48-b2a7-f15579a1c38f"
+    private val buttonClickCharUUID = "3c0a1003-281d-4b48-b2a7-f15579a1c38f"
 
     //Services and Characteristics of the SYM Pixl
     private var timeService: BluetoothGattService? = null
@@ -63,10 +74,10 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
      */
 
     fun readTemperature(): Boolean {
-        if (!isConnected.value!! || temperatureChar == null)
-            return false
+        return if (!isConnected.value!! || temperatureChar == null)
+            false
         else
-            return ble.readTemperature()
+            ble.readTemperature()
     }
 
     private val bleConnectionObserver: ConnectionObserver = object : ConnectionObserver {
@@ -121,15 +132,47 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
                         Log.d(TAG, "isRequiredServiceSupported - TODO")
 
-                        /* TODO
+                        /*
                         - Nous devons vérifier ici que le périphérique auquel on vient de se connecter possède
                           bien tous les services et les caractéristiques attendues, on vérifiera aussi que les
                           caractéristiques présentent bien les opérations attendues
                         - On en profitera aussi pour garder les références vers les différents services et
                           caractéristiques (déclarés en lignes 39 à 44)
                         */
+                        var AllCheck = false
 
-                        return false //FIXME si tout est OK, on retourne true, sinon la librairie appelera la méthode onDeviceDisconnected() avec le flag REASON_NOT_SUPPORTED
+                        // Vérification des services et des caractéristiques
+                        for (i in gatt.services){
+                            if (i.uuid == UUID.fromString(timeServiceUUID)){
+                                timeService = i
+                                for (j in i.characteristics) {
+                                    if (j.uuid == UUID.fromString(currentTimeCharUUID)){
+                                        currentTimeChar = j
+                                    }
+                                }
+                            }
+                            if (i.uuid == UUID.fromString(symServiceUUID)){
+                                symService = i
+                                for (j in i.characteristics) {
+                                    if (j.uuid == UUID.fromString(integerCharUUID)){
+                                        integerChar = j
+                                    }
+                                    if (j.uuid == UUID.fromString(buttonClickCharUUID)){
+                                        buttonClickChar = j
+                                    }
+                                    if (j.uuid == UUID.fromString(temperatureCharUUID)){
+                                        temperatureChar = j
+                                    }
+                                }
+                            }
+                        }
+
+                        // Vérification des opérations
+                        if (timeService != null && symService != null && currentTimeChar != null && integerChar != null && buttonClickChar != null && temperatureChar != null) {
+                            AllCheck = true
+                        }
+
+                        return AllCheck
                     }
 
                     override fun initialize() {
@@ -139,6 +182,65 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                             Dans notre cas il s'agit de s'enregistrer pour recevoir les notifications proposées par certaines
                             caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                          */
+                        // TODO Réception des notifications
+
+                        // Local
+                        mConnection?.setCharacteristicNotification(currentTimeChar, true)
+                        mConnection?.setCharacteristicNotification(buttonClickChar, true)
+
+                        // Remote
+                        val clientConfigurationUUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+                        var descCT = currentTimeChar?.getDescriptor(clientConfigurationUUID)
+                        if (descCT != null) {
+                            descCT.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        }
+                        mConnection?.writeDescriptor(descCT)
+
+                        var descBC = buttonClickChar?.getDescriptor(clientConfigurationUUID)
+                        if (descBC != null) {
+                            descBC.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        }
+                        mConnection?.writeDescriptor(descBC)
+
+                        // TODO CALLBACKS
+
+
+                    }
+
+                    override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+                        super.onCharacteristicRead(gatt, characteristic)
+                        if (characteristic.uuid.toString() == temperatureCharUUID) {
+                            Log.d("READ","In it")
+                            temperature.postValue(characteristic.getIntValue(Data.FORMAT_UINT16,0).div(10).toString())
+                        }
+                        temperature.value?.let { Log.d("READ", it) }
+                    }
+
+                    override fun onCharacteristicNotified(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+                        super.onCharacteristicNotified(gatt, characteristic)
+
+                        readTemperature()
+
+                        if (characteristic == currentTimeChar) {
+                            var year = ByteBuffer.wrap(characteristic.value.copyOfRange(0, 2)).short
+                            var month = characteristic.value[2].toUInt()
+                            var day = characteristic.value[3].toUInt()
+
+                            var hours = characteristic.value[4].toUInt()
+                            var mins = characteristic.value[5].toUInt()
+                            var secs = characteristic.value[6].toUInt()
+                            Log.d("ON NOTIFICATION current", year.toString() + "/" + month.toString() + "/" + day.toString() + " " + hours + ":" + mins + ":" + secs)
+                        }
+                        if (characteristic == integerChar) {
+                            Log.d("ON NOTIFICATION integer", String(characteristic.value))
+                        }
+                        if (characteristic == temperatureChar) {
+                            Log.d("ON NOTIFICATION temp", String(characteristic.value))
+                        }
+                        if (characteristic == buttonClickChar) {
+                            Log.d("ON NOTIFICATION button", String(characteristic.value))
+                        }
                     }
 
                     override fun onDeviceDisconnected() {
@@ -155,6 +257,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
             return mGattCallback!!
         }
 
+
         fun readTemperature(): Boolean {
             /*  TODO
                 on peut effectuer ici la lecture de la caractéristique température
@@ -162,7 +265,12 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                 des MutableLiveData
                 On placera des méthodes similaires pour les autres opérations
             */
-            return false //FIXME
+            if (temperatureChar != null) {
+                mConnection?.readCharacteristic(temperatureChar)
+                return true
+            } else {
+                return false
+            }
         }
     }
 

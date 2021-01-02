@@ -36,6 +36,7 @@ dependencies {
 
     //https://github.com/permissions-dispatcher/PermissionsDispatcher - Apache License 2.0
     implementation 'org.permissionsdispatcher:permissionsdispatcher:4.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     kapt 'org.permissionsdispatcher:permissionsdispatcher-processor:4.8.0'
 
     //https://github.com/NordicSemiconductor/Android-BLE-Library - BSD 3-Clause "New" or "Revised" License
