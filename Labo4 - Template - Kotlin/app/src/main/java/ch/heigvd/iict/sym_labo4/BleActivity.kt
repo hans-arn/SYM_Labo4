@@ -16,6 +16,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import kotlinx.android.synthetic.main.activity_ble.view.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -106,7 +107,7 @@ class BleActivity : BaseTemplateActivity() {
 
         // For sending an integer to the device
         buttonIntegerBLE.setOnClickListener(){
-
+            bleViewModel.sendInteger((integerFieldBLE.text).toString().toInt())
         }
 
         // For automatically updating the date
@@ -116,8 +117,12 @@ class BleActivity : BaseTemplateActivity() {
             val min = calendar.get(Calendar.MINUTE)
             val sec = calendar.get(Calendar.SECOND)
             val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
+            var month = calendar.get(Calendar.MONTH)+1
+            if (month > 11) {
+                month = 0
+            }
             val day = calendar.get(Calendar.DAY_OF_MONTH)
+            bleViewModel.sendDate(hour,min,sec,year,month,day)
         }
 
         // For manually updating the date
@@ -149,9 +154,9 @@ class BleActivity : BaseTemplateActivity() {
             // Verification for the Time format
             val regexTime = Regex("[0-2][0-9](:)[0-5][0-9](:)[0-5][0-9]")
             if (regexTime.matchEntire(timeFieldBLE.text) != null){
-                hour = dateFieldBLE.text.substring(0,2).toInt()
-                min = dateFieldBLE.text.substring(3,5).toInt()
-                sec = dateFieldBLE.text.substring(6,8).toInt()
+                hour = timeFieldBLE.text.substring(0,2).toInt()
+                min = timeFieldBLE.text.substring(3,5).toInt()
+                sec = timeFieldBLE.text.substring(6,8).toInt()
 
                 if (hour<=23 && min<=59 && sec<=59){
                     timeOK = true
@@ -160,7 +165,7 @@ class BleActivity : BaseTemplateActivity() {
 
             // If everything is OK we can call the function for updating the date and time
             if (dateOK && timeOK){
-
+                bleViewModel.sendDate(hour,min,sec,year,month,day)
             }
             else {
                 Toast.makeText(this, "Mauvais format !", Toast.LENGTH_LONG).show()

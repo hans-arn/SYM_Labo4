@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="numberSigned"
+                android:inputType="number"
                 android:textAlignment="center" />
 
             <Button
@@ -84,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="100px"
-                android:text="Changer la date"
+                android:text="Changer la date et l'heure"
                 android:textAlignment="center" />
 
             <EditText
@@ -96,13 +96,6 @@
                 android:inputType="date"
                 android:textAlignment="center"
                 android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/infoChangeHour"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Changer l'heure"
-                android:textAlignment="center" />
 
             <EditText
                 android:id="@+id/timeField"

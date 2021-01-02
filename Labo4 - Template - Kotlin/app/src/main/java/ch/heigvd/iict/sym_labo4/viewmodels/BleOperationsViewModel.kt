@@ -10,7 +10,6 @@ import androidx.lifecycle.MutableLiveData
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.data.Data
 import no.nordicsemi.android.ble.observer.ConnectionObserver
-import java.nio.ByteBuffer
 import java.util.*
 
 /**
@@ -69,16 +68,25 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
         mConnection?.disconnect()
     }
 
-    /* TODO
-        vous pouvez placer ici les différentes méthodes permettant à l'utilisateur
-        d'interagir avec le périphérique depuis l'activité
-     */
-
     fun readTemperature(): Boolean {
         return if (!isConnected.value!! || temperatureChar == null)
             false
         else
             ble.readTemperature()
+    }
+
+    fun sendInteger(integer: Int): Boolean{
+        return if (!isConnected.value!! || integerChar == null)
+            false
+        else
+            ble.sendInteger(integer)
+    }
+
+    fun sendDate(hours: Int, minutes: Int, seconds: Int, year: Int, month: Int, day: Int): Boolean{
+        return if (!isConnected.value!! || currentTimeChar == null)
+            false
+        else
+            ble.sendDate(hours, minutes, seconds, year, month, day)
     }
 
     private val bleConnectionObserver: ConnectionObserver = object : ConnectionObserver {
@@ -130,9 +138,6 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
                     public override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
                         mConnection = gatt //trick to force disconnection
-
-                        Log.d(TAG, "isRequiredServiceSupported - TODO")
-
                         /*
                         - Nous devons vérifier ici que le périphérique auquel on vient de se connecter possède
                           bien tous les services et les caractéristiques attendues, on vérifiera aussi que les
@@ -177,7 +182,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                     }
 
                     override fun initialize() {
-                        /*  TODO
+                        /*
                             Ici nous somme sûr que le périphérique possède bien tous les services et caractéristiques
                             attendus et que nous y sommes connectés. Nous pouvous effectuer les premiers échanges BLE:
                             Dans notre cas il s'agit de s'enregistrer pour recevoir les notifications proposées par certaines
@@ -192,13 +197,13 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                         // Remote
                         val clientConfigurationUUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
-                        var descCT = currentTimeChar?.getDescriptor(clientConfigurationUUID)
+                        val descCT = currentTimeChar?.getDescriptor(clientConfigurationUUID)
                         if (descCT != null) {
                             descCT.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                         }
                         mConnection?.writeDescriptor(descCT)
 
-                        var descBC = buttonClickChar?.getDescriptor(clientConfigurationUUID)
+                        val descBC = buttonClickChar?.getDescriptor(clientConfigurationUUID)
                         if (descBC != null) {
                             descBC.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                         }
@@ -210,23 +215,36 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                     }
 
                     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                        super.onCharacteristicRead(gatt, characteristic)
                         if (characteristic.uuid.toString() == temperatureCharUUID) {
                             temperature.postValue(characteristic.getIntValue(Data.FORMAT_UINT16,0).div(10).toString())
                         }
                     }
 
                     override fun onCharacteristicNotified(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                        super.onCharacteristicNotified(gatt, characteristic)
-
                         if (characteristic.uuid == currentTimeChar?.uuid) {
-                            var year = characteristic.getIntValue(Data.FORMAT_UINT16, 0)
-                            var month = characteristic.getIntValue(Data.FORMAT_UINT8, 2)
-                            var day = characteristic.getIntValue(Data.FORMAT_UINT8, 3)
+                            val year = characteristic.getIntValue(Data.FORMAT_UINT16, 0).toString()
+                            var month = characteristic.getIntValue(Data.FORMAT_UINT8, 2).toString()
+                            var day = characteristic.getIntValue(Data.FORMAT_UINT8, 3).toString()
 
-                            var hour = characteristic.getIntValue(Data.FORMAT_UINT8, 4);
-                            var min = characteristic.getIntValue(Data.FORMAT_UINT8, 5);
-                            var sec = characteristic.getIntValue(Data.FORMAT_UINT8, 6);
+                            var hour = characteristic.getIntValue(Data.FORMAT_UINT8, 4).toString()
+                            var min = characteristic.getIntValue(Data.FORMAT_UINT8, 5).toString()
+                            var sec = characteristic.getIntValue(Data.FORMAT_UINT8, 6).toString()
+
+                            if (month.toInt() < 10) {
+                                month = "0$month"
+                            }
+                            if (day.toInt() < 10) {
+                                day = "0$day"
+                            }
+                            if (hour.toInt() < 10) {
+                                hour = "0$hour"
+                            }
+                            if (min.toInt() < 10) {
+                                min = "0$min"
+                            }
+                            if (sec.toInt() < 10) {
+                                sec = "0$sec"
+                            }
 
                             date.postValue("$day/$month/$year | $hour:$min:$sec")
                         }
@@ -257,11 +275,38 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                 des MutableLiveData
                 On placera des méthodes similaires pour les autres opérations
             */
-            if (temperatureChar != null) {
+            return if (temperatureChar != null) {
                 mConnection?.readCharacteristic(temperatureChar)
-                return true
+                true
             } else {
-                return false
+                false
+            }
+        }
+
+        fun sendInteger(integer: Int): Boolean{
+            // This function sends an integer to the device
+            return if (integerChar != null){
+                integerChar!!.setValue(integer, Data.FORMAT_UINT32,0)
+                mConnection?.writeCharacteristic(integerChar)
+                true
+            } else {
+                false
+            }
+        }
+
+        fun sendDate(hours: Int, minutes: Int, seconds: Int, year: Int, month: Int, day: Int): Boolean{
+            // This function sends a new date to the device
+            return if (currentTimeChar != null){
+                currentTimeChar!!.setValue(year, Data.FORMAT_UINT16, 0)
+                currentTimeChar!!.setValue(month, Data.FORMAT_UINT8, 2)
+                currentTimeChar!!.setValue(day, Data.FORMAT_UINT8, 3)
+                currentTimeChar!!.setValue(hours, Data.FORMAT_UINT8, 4)
+                currentTimeChar!!.setValue(minutes, Data.FORMAT_UINT8, 5)
+                currentTimeChar!!.setValue(seconds, Data.FORMAT_UINT8, 6)
+                mConnection?.writeCharacteristic(currentTimeChar)
+                true
+            } else {
+                false
             }
         }
     }
