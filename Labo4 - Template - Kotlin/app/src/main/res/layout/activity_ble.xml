@@ -53,6 +53,84 @@
                 android:layout_marginTop="100px"
                 android:text="BOUTONS"
                 android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/InfoEnvoisInt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100px"
+                android:text="Envoyer un entier"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/integerField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberSigned"
+                android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/buttonInteger"
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:autoText="false"
+                android:elegantTextHeight="false"
+                android:text="Envoyer"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/infoChangeDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100px"
+                android:text="Changer la date"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/dateField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="jour/mois/année"
+                android:inputType="date"
+                android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/buttonDate"
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:autoText="false"
+                android:elegantTextHeight="false"
+                android:text="Changer"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/infoChangeHour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100px"
+                android:text="Changer l'heure"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/timeField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="heure/minutes/secondes"
+                android:inputType="time"
+                android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/buttonTime"
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:autoText="false"
+                android:elegantTextHeight="false"
+                android:text="Changer"
+                android:textSize="10sp" />
+
         </LinearLayout>
 
     </ScrollView>
@@ -67,7 +145,9 @@
             android:id="@+id/ble_scanresults"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical" >
+
+        </ListView>
 
         <TextView
             android:id="@+id/ble_scanresults_empty"

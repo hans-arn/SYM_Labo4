@@ -44,6 +44,15 @@ class BleActivity : BaseTemplateActivity() {
     // AJOUT DES BOUTONS ET INTERFACES POUR L'UTILISATEUR
     private lateinit var buttonTemperatureBLE: Button
 
+    private lateinit var integerFieldBLE: EditText
+    private lateinit var buttonIntegerBLE: Button
+
+    private lateinit var dateFieldBLE: EditText
+    private lateinit var buttonDateBLE: Button
+
+    private lateinit var timeFieldBLE: EditText
+    private lateinit var timeButtonBLE: Button
+
     //menu elements
     private var scanMenuBtn: MenuItem? = null
     private var disconnectMenuBtn: MenuItem? = null
@@ -77,8 +86,29 @@ class BleActivity : BaseTemplateActivity() {
         // AJOUT DES BOUTONS ET INTERFACES POUR L'UTILISATEUR
         buttonTemperatureBLE = findViewById(R.id.buttonTemperature)
 
+        integerFieldBLE = findViewById(R.id.integerField)
+        buttonIntegerBLE = findViewById(R.id.buttonInteger)
+
+        dateFieldBLE = findViewById(R.id.dateField)
+        buttonDateBLE = findViewById(R.id.buttonDate)
+
+        timeFieldBLE = findViewById(R.id.timeField)
+        timeButtonBLE = findViewById(R.id.buttonTime)
+
         buttonTemperatureBLE.setOnClickListener(){
             bleViewModel.readTemperature()
+        }
+
+        buttonIntegerBLE.setOnClickListener(){
+
+        }
+
+        buttonDateBLE.setOnClickListener(){
+            if ()
+        }
+
+        buttonTimeBLE.setOnClickListener(){
+
         }
 
         //manage scanned item
