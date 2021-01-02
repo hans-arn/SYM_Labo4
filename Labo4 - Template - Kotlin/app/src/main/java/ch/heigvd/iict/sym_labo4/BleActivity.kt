@@ -10,6 +10,7 @@ import android.bluetooth.le.*
 import androidx.lifecycle.ViewModelProvider
 import android.os.Handler
 import android.os.Looper
+import android.os.ParcelUuid
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -34,6 +35,8 @@ class BleActivity : BaseTemplateActivity() {
     private lateinit var scanPanel: View
     private lateinit var scanResults: ListView
     private lateinit var emptyScanResults: TextView
+
+    private lateinit var temperatureBLE: TextView
 
     //menu elements
     private var scanMenuBtn: MenuItem? = null
@@ -60,6 +63,8 @@ class BleActivity : BaseTemplateActivity() {
         scanResults = findViewById(R.id.ble_scanresults)
         emptyScanResults = findViewById(R.id.ble_scanresults_empty)
 
+        temperatureBLE = findViewById(R.id.temp)
+
         //manage scanned item
         scanResultsAdapter = ResultsAdapter(this)
         scanResults.adapter = scanResultsAdapter
@@ -82,6 +87,7 @@ class BleActivity : BaseTemplateActivity() {
 
         //ble events
         bleViewModel.isConnected.observe(this, { updateGui() })
+        bleViewModel.temperature.observe(this, { updateGui() })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -124,6 +130,9 @@ class BleActivity : BaseTemplateActivity() {
             scanPanel.visibility = View.GONE
             operationPanel.visibility = View.VISIBLE
 
+            
+            temperatureBLE.text = bleViewModel.temperature.value + " Degrès Celsius"
+
             if (scanMenuBtn != null && disconnectMenuBtn != null) {
                 scanMenuBtn!!.isVisible = false
                 disconnectMenuBtn!!.isVisible = true
@@ -151,12 +160,13 @@ class BleActivity : BaseTemplateActivity() {
 
             //we scan for any BLE device
             //we don't filter them based on advertised services...
-            // TODO ajouter un filtre pour n'afficher que les devices proposant
+            // Un filtre pour n'afficher que les devices proposant
             // le service "SYM" (UUID: "3c0a1000-281d-4b48-b2a7-f15579a1c38f")
-
+            val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString("3c0a1000-281d-4b48-b2a7-f15579a1c38f")).build()
+            val filters: List<ScanFilter> = listOf(filter)
             //reset display
             scanResultsAdapter.clear()
-            bluetoothScanner.startScan(null, builderScanSettings.build(), leScanCallback)
+            bluetoothScanner.startScan(filters, builderScanSettings.build(), leScanCallback)
             Log.d(TAG, "Start scanning...")
             isScanning = true
 

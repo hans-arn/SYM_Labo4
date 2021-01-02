@@ -48,7 +48,7 @@ class CompassActivity : AppCompatActivity(),SensorEventListener {
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
 
-        // on s'en registre pour pour les capteurs accelerometre et magnetometre
+        // on s'enregistre pour les capteurs accelerometre et magnetometre
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
         mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL)
     }
