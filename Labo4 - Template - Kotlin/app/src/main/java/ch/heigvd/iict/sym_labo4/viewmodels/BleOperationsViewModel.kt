@@ -4,6 +4,7 @@ import android.app.Application
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log
+import android.view.contentcapture.DataShareWriteAdapter
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -28,6 +29,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
     val date = MutableLiveData("Jour / Mois / Année | Heure : Minute : Seconde")
     val temperature = MutableLiveData("TEMPERATURE")
+    val clickCounter = MutableLiveData(0)
 
     //UUIDs for services and characteristics
     private val timeServiceUUID = "00001805-0000-1000-8000-00805f9b34fb"
@@ -189,46 +191,17 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                             caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                          */
                         // Réception des notifications
-
-                        // Local
-                        mConnection?.setCharacteristicNotification(currentTimeChar, true)
-                        mConnection?.setCharacteristicNotification(buttonClickChar, true)
-
-                        // Remote
-                        val clientConfigurationUUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-
-                        val descCT = currentTimeChar?.getDescriptor(clientConfigurationUUID)
-                        if (descCT != null) {
-                            descCT.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                        }
-                        mConnection?.writeDescriptor(descCT)
-
-                        val descBC = buttonClickChar?.getDescriptor(clientConfigurationUUID)
-                        if (descBC != null) {
-                            descBC.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                        }
-                        mConnection?.writeDescriptor(descBC)
-
                         // CALLBACKS
                         // Les callbacks passent par la fonction onCharacteristicNotified
 
-                    }
+                        setNotificationCallback(currentTimeChar).with { _: BluetoothDevice, data: Data ->
+                            val year = data.getIntValue(Data.FORMAT_UINT16, 0).toString()
+                            var month = data.getIntValue(Data.FORMAT_UINT8, 2).toString()
+                            var day = data.getIntValue(Data.FORMAT_UINT8, 3).toString()
 
-                    override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                        if (characteristic.uuid.toString() == temperatureCharUUID) {
-                            temperature.postValue(characteristic.getIntValue(Data.FORMAT_UINT16,0).div(10).toString())
-                        }
-                    }
-
-                    override fun onCharacteristicNotified(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                        if (characteristic.uuid == currentTimeChar?.uuid) {
-                            val year = characteristic.getIntValue(Data.FORMAT_UINT16, 0).toString()
-                            var month = characteristic.getIntValue(Data.FORMAT_UINT8, 2).toString()
-                            var day = characteristic.getIntValue(Data.FORMAT_UINT8, 3).toString()
-
-                            var hour = characteristic.getIntValue(Data.FORMAT_UINT8, 4).toString()
-                            var min = characteristic.getIntValue(Data.FORMAT_UINT8, 5).toString()
-                            var sec = characteristic.getIntValue(Data.FORMAT_UINT8, 6).toString()
+                            var hour = data.getIntValue(Data.FORMAT_UINT8, 4).toString()
+                            var min = data.getIntValue(Data.FORMAT_UINT8, 5).toString()
+                            var sec = data.getIntValue(Data.FORMAT_UINT8, 6).toString()
 
                             if (month.toInt() < 10) {
                                 month = "0$month"
@@ -248,9 +221,12 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
 
                             date.postValue("$day/$month/$year | $hour:$min:$sec")
                         }
-                        if (characteristic.uuid == buttonClickChar?.uuid) {
-                            Log.d("ON NOTIFICATION button", String(characteristic.value))
+                        enableNotifications(currentTimeChar).enqueue()
+
+                        setNotificationCallback(buttonClickChar).with { _: BluetoothDevice, data: Data ->
+                            clickCounter.postValue(data.getIntValue(Data.FORMAT_UINT8, 0))
                         }
+                        enableNotifications(buttonClickChar).enqueue()
                     }
 
                     override fun onDeviceDisconnected() {
@@ -276,7 +252,9 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                 On placera des méthodes similaires pour les autres opérations
             */
             return if (temperatureChar != null) {
-                mConnection?.readCharacteristic(temperatureChar)
+                readCharacteristic(temperatureChar).with { _: BluetoothDevice, data: Data ->
+                    temperature.postValue(data.getIntValue(Data.FORMAT_UINT16,0)?.div(10).toString())
+                }.enqueue()
                 true
             } else {
                 false
@@ -287,7 +265,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
             // This function sends an integer to the device
             return if (integerChar != null){
                 integerChar!!.setValue(integer, Data.FORMAT_UINT32,0)
-                mConnection?.writeCharacteristic(integerChar)
+                writeCharacteristic(integerChar, integerChar!!.value).enqueue()
                 true
             } else {
                 false
@@ -303,7 +281,7 @@ class BleOperationsViewModel(application: Application) : AndroidViewModel(applic
                 currentTimeChar!!.setValue(hours, Data.FORMAT_UINT8, 4)
                 currentTimeChar!!.setValue(minutes, Data.FORMAT_UINT8, 5)
                 currentTimeChar!!.setValue(seconds, Data.FORMAT_UINT8, 6)
-                mConnection?.writeCharacteristic(currentTimeChar)
+                writeCharacteristic(currentTimeChar, currentTimeChar!!.value).enqueue()
                 true
             } else {
                 false
