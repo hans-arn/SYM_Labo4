@@ -196,6 +196,7 @@ class BleActivity : BaseTemplateActivity() {
         bleViewModel.isConnected.observe(this, { updateGui() })
         bleViewModel.temperature.observe(this, { updateGui() })
         bleViewModel.date.observe(this, {updateGui()})
+        bleViewModel.clickCounter.observe(this, {updateGui()})
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -240,6 +241,7 @@ class BleActivity : BaseTemplateActivity() {
 
             temperatureBLE.text = bleViewModel.temperature.value + " Degrès Celsius"
             dateBLE.text = bleViewModel.date.value
+            buttonClickBLE.text = bleViewModel.clickCounter.value.toString()
 
             if (scanMenuBtn != null && disconnectMenuBtn != null) {
                 scanMenuBtn!!.isVisible = false
