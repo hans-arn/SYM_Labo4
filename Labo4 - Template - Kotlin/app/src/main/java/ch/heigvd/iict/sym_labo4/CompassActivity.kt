@@ -101,14 +101,4 @@ class CompassActivity : AppCompatActivity(),SensorEventListener {
             SensorManager.getRotationMatrix(matrix, null, mSensorAcce, mSensorMagn)
             opglr.swapRotMatrix(matrix)
         }
-    /*
-        your activity need to register to accelerometer and magnetometer sensors' updates
-        then you may want to call
-        TODO
-        opglr.swapRotMatrix()
-        with the 4x4 rotation matrix, every time a new matrix is computed
-        more information on rotation matrix can be found online:
-        https://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[],%20float[],%20float[],%20float[])
-    */
-
 }

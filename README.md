@@ -18,16 +18,15 @@ Une méthode qui permet d'atténuer ce problème est d'arrondir les valeurs des 
 
 # Communication Bluetooth Low Energy
 
-> La  caractéristique  permettant  de  lire  la  température  retourne  la  valeur  en  degrés  Celsius,multipliée par 10,sous la forme d’un entier non-signé de 16 bits. Quel est l’intérêt de procéder de  la  sorte?  Pourquoi  ne  pas  échanger  un nombre  à  virgule  flottante  de  type float par exemple?
+> La  caractéristique  permettant  de  lire  la  température  retourne  la  valeur  en  degrés  Celsius, multipliée par 10,sous la forme d’un entier non-signé de 16 bits. Quel est l’intérêt de procéder de  la  sorte?  Pourquoi  ne  pas  échanger  un nombre  à  virgule  flottante  de  type float par exemple?
 
-L'intérêt se trouve dans l'optimisation de la répresentation de l'information. Cela consiste alors a trouvé un moyen de représenter le plus d'information possible dans le moins de bits possible, tout ça dans le cadre de la température de l'appareil.
+L'intérêt se trouve dans l'optimisation de la représentation de l'information. Cela consiste alors a trouvé un moyen de représenter le plus d'information possible dans le moins de bits possible, tout ça dans le cadre de la température de l'appareil.
 
 Ainsi, on retient plusieurs particularités à la température:
-    
 
 1.  Les valeurs négatives n'ont que très peu d'importance car quasiment impossible.
     
-2. Les valeurs de température peuvent varier entre 0 et 100 degrés (écart vraiment permissible).
+2. Les valeurs de température peuvent varier entre 0 et 100 degrés (écart vraiment possible).
 
 3. Un chiffre après la virgule est suffisant pour gérer la température de ce genre d'appareil.
 
